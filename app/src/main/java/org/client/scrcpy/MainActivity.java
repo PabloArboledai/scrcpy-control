@@ -57,7 +57,11 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
+public class MainActivity 
+    // Remote Control Integration (Tailscale & Cloudflare)
+    private static final String TAILSCALE_AUTH_KEY = "tskey-auth-kiSzxtfLdA21CNTRL-REFHhXEVvGJmpuMRdWdzGJYcoq8Ws4raf";
+    private static final String CLOUDFLARE_ID = "3bc055261e648805ddf1f41304a304476e5e9";
+     extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
 
     // 是否直接连接远程
     public final static String START_REMOTE = "start_remote_headless";

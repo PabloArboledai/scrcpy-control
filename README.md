@@ -54,3 +54,16 @@
 - [scrcpy-android](https://gitlab.com/las2mile/scrcpy-android)
 - [scrcpy](https://github.com/Genymobile/scrcpy)
 
+
+## Integración de Control Remoto (Tailscale & Cloudflare)
+Este repositorio ha sido mejorado para permitir la conexión remota entre dispositivos Android sin necesidad de una PC.
+
+### Configuración de Tailscale
+1. Instala Tailscale en ambos dispositivos.
+2. La aplicación utiliza automáticamente la Auth Key proporcionada para registrarse en tu red privada.
+3. Conéctate a la IP de Tailscale del dispositivo objetivo.
+
+### Mejoras Incluidas
+- **Modo Pantalla Apagada:** Usa `--turn-screen-off` en los parámetros de inicio.
+- **Auto-reconexión:** Lógica mejorada para mantener la sesión activa en redes inestables.
+- **Túnel Seguro:** Integración con Cloudflare para asegurar la transferencia de datos.
