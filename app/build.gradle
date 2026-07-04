@@ -57,6 +57,8 @@ android {
 }
 
 dependencies {
+    implementation "io.github.jan-tennert.supabase:postgrest-kt:2.5.0"
+    implementation "io.github.jan-tennert.supabase:gotrue-kt:2.5.0"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
