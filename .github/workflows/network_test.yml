@@ -1,0 +1,11 @@
+name: Network Connectivity Test
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Connection to Honor
+        run: |
+          nc -zv -w 5 192.168.205.42 42529 || echo "Connection failed"
+          ping -c 3 192.168.205.42 || echo "Ping failed"
