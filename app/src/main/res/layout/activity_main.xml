@@ -250,12 +250,33 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginBottom="20dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_selector"
                 android:text="@string/action_start"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/button_qr_pair"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_selector"
+                android:text="Vincular mediante QR"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/imageView_qr"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>
