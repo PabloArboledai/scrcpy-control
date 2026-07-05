@@ -21,8 +21,9 @@ image = (
     })
 )
 
-@app.function(image=image, timeout=1200)
+@app.function(image=image, timeout=1200, secrets=[modal.Secret.from_dict({"TELEGRAM_BOT_TOKEN": "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew", "TELEGRAM_CHAT_ID": "8776480439"})])
 def build_apk():
+    import requests
     # Clonar el repo dentro de Modal
     repo_url = os.environ.get("REPO_URL", "https://github.com/PabloArboledai/scrcpy-control.git")
     # Limpiar directorio si existe y clonar de nuevo
@@ -73,36 +74,44 @@ def build_apk():
     with open(apk_path, "rb") as f:
         apk_data = f.read()
         
-    return {"status": "success", "apk_name": final_name, "apk_data": apk_data}
+    # Guardar localmente para el envío
+    with open(final_name, "wb") as f:
+        f.write(apk_data)
+
+    # --- ENVÍO AUTOMÁTICO A TELEGRAM (DENTRO DE MODAL) ---
+    bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    
+    if bot_token and chat_id:
+        url = f"https://api.telegram.org/bot{bot_token}/sendDocument"
+        print(f"Enviando {final_name} a Telegram...")
+        try:
+            with open(final_name, 'rb') as f:
+                r = requests.post(url, data={'chat_id': chat_id, 'caption': f'✅ ControlDroid APK generado automáticamente\n📅 {datetime.now().strftime("%Y-%m-%d %H:%M")}'}, files={'document': f})
+                if r.status_code == 200:
+                    print("✅ Envío a Telegram exitoso.")
+                    telegram_status = "success"
+                else:
+                    print(f"❌ Error en Telegram: {r.text}")
+                    telegram_status = f"error: {r.text}"
+        except Exception as e:
+            print(f"❌ Error enviando a Telegram: {e}")
+            telegram_status = f"exception: {e}"
+    else:
+        telegram_status = "missing_credentials"
+
+    return {"status": "success", "apk_name": final_name, "apk_data": apk_data, "telegram_status": telegram_status}
 
 if __name__ == "__main__":
     with app.run():
-        print("Starting build...")
+        print("🚀 Iniciando compilación y envío automático...")
         result = build_apk.remote()
         
     if result["status"] == "success":
-        apk_name = result["apk_name"]
-        with open(apk_name, "wb") as f:
+        print(f"✅ Proceso completado: {result['apk_name']}")
+        print(f"📱 Estado de envío a Telegram: {result['telegram_status']}")
+        # Guardar una copia local en el sandbox también
+        with open(result["apk_name"], "wb") as f:
             f.write(result["apk_data"])
-        print(f"Build successful: {apk_name}")
-        print(f"APK saved locally as {apk_name}")
-        
-        # Enviar a Telegram
-        import requests
-        # Bot ControlDroid (Principal)
-        bot_token_main = "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew"
-        # Bot Archivos (Respaldo)
-        bot_token_files = "8713992811:AAFBPCrB47d3Jq7lic9ICNAVWCO511_d1vo"
-        chat_id = "8776480439"
-        
-        for token in [bot_token_main, bot_token_files]:
-            url = f"https://api.telegram.org/bot{token}/sendDocument"
-            print(f"Enviando {apk_name} a Telegram (Token: {token[:10]}...)...")
-            try:
-                with open(apk_name, 'rb') as f:
-                    r = requests.post(url, data={'chat_id': chat_id, 'caption': f'ControlDroid APK - {datetime.now().strftime("%Y-%m-%d %H:%M")}'}, files={'document': f})
-                    print(f"Respuesta Telegram: {r.status_code} - {r.text}")
-            except Exception as e:
-                print(f"Error enviando a Telegram: {e}")
     else:
-        print(f"Build failed: {result["log"]}")
+        print(f"❌ Fallo en el proceso: {result['log']}")
