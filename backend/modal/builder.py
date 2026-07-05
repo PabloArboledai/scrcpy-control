@@ -8,6 +8,7 @@ app = modal.App("controldroid-builder")
 image = (
     modal.Image.debian_slim()
     .apt_install("openjdk-17-jdk", "wget", "unzip", "git")
+    .pip_install("requests")
     .run_commands(
         "wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip",
         "mkdir -p /sdk/cmdline-tools",
