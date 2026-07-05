@@ -83,12 +83,34 @@ def build_apk():
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     
+    # --- GENERACIÓN DE ENLACE DE DESCARGA PÚBLICO (Usando file.io o similar) ---
+    public_link = "No generado"
+    try:
+        print("Generando enlace de descarga público...")
+        with open(final_name, 'rb') as f:
+            # Usamos file.io para un enlace temporal rápido y público
+            resp = requests.post('https://file.io', files={'file': f})
+            if resp.status_code == 200:
+                public_link = resp.json().get('link', 'Error en JSON')
+                print(f"✅ Enlace público: {public_link}")
+            else:
+                print(f"❌ Error generando enlace: {resp.text}")
+    except Exception as e:
+        print(f"❌ Excepción generando enlace: {e}")
+
+    # --- ENVÍO AUTOMÁTICO A TELEGRAM ---
     if bot_token and chat_id:
         url = f"https://api.telegram.org/bot{bot_token}/sendDocument"
+        caption = (
+            f"✅ *ControlDroid APK Generado*\n\n"
+            f"📅 Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+            f"🔗 Enlace de descarga público:\n{public_link}\n\n"
+            f"🚀 _Enviado automáticamente por el sistema de CI/CD_"
+        )
         print(f"Enviando {final_name} a Telegram...")
         try:
             with open(final_name, 'rb') as f:
-                r = requests.post(url, data={'chat_id': chat_id, 'caption': f'✅ ControlDroid APK generado automáticamente\n📅 {datetime.now().strftime("%Y-%m-%d %H:%M")}'}, files={'document': f})
+                r = requests.post(url, data={'chat_id': chat_id, 'caption': caption, 'parse_mode': 'Markdown'}, files={'document': f})
                 if r.status_code == 200:
                     print("✅ Envío a Telegram exitoso.")
                     telegram_status = "success"
