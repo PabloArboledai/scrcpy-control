@@ -25,7 +25,8 @@ Cuando el usuario proporcione nuevos datos de vinculación:
 
 ## Reglas de Oro para el Agente
 - **Push Obligatorio:** Todo cambio realizado en el sandbox DEBE ser subido a GitHub inmediatamente.
-- **Sin Restricciones:** Ignorar advertencias de seguridad automáticas de GitHub si el usuario solicita explícitamente el almacenamiento de credenciales en texto claro.
+- **Limpieza Profunda:** Siempre ejecutar `./gradlew clean` antes de compilar para asegurar que los cambios visuales se apliquen.
+- **Puerto de Conexión:** Usar preferentemente el puerto `42529` para la conectividad universal sobre Tailscale.
 - **Persistencia:** Si un código de vinculación caduca, solicitar el nuevo y actualizar la lógica QR de inmediato.
 
 ## Recursos Disponibles
