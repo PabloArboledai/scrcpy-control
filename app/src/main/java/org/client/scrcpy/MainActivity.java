@@ -607,7 +607,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     }
 
     protected void connectSuccessExt() {
-        Dialog.closeDialogs();
+        Progress.closeDialog();
     }
 
     protected void connectExitExt() {
@@ -616,16 +616,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
 
     protected void connectExitExt(boolean userDisconnect) {
         if (headlessMode && !resumeScrcpy && !result_of_Rotation) {
-            if (!userDisconnect) {
-                Dialog.displayDialog(this, getString(R.string.connect_faild),
-                        getString(R.string.connect_faild_ask), () -> {
-                            connectScrcpyServer(PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "100.91.47.35:34315"));
-                        }, () -> {
-                            finishAndRemoveTask();
-                        });
-            } else {
-                finishAndRemoveTask();
-            }
+            finishAndRemoveTask();
         }
     }
 
