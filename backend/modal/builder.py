@@ -42,17 +42,14 @@ def build_apk():
     
     print("Compiling ControlDroid APK with gradlew assembleScrcpyDebug --stacktrace...")
     # Capturamos la salida para poder incluirla en el log de error si falla
-    with open("gradle_output.log", "w") as f:
-        result = subprocess.run(["./gradlew", "assembleScrcpyDebug", "--stacktrace"], capture_output=True, text=True, check=False)
+    result = subprocess.run(["./gradlew", "assembleScrcpyDebug", "--stacktrace"], capture_output=True, text=True, check=False)
     
     if result.returncode != 0:
-        print("Gradle build failed. Check gradle_output.log for details.")
-        with open("gradle_output.log", "w") as f:
-            f.write("Standard Output:\n")
-            f.write(result.stdout)
-            f.write("\nStandard Error:\n")
-            f.write(result.stderr)
-        return {"status": "error", "log": f"Build failed. See gradle_output.log. Content:\nStandard Output:\n{result.stdout}\nStandard Error:\n{result.stderr}"}
+        print("Gradle build failed. Standard Output:")
+        print(result.stdout)
+        print("Standard Error:")
+        print(result.stderr)
+        return {"status": "error", "log": f"Build failed. Stdout: {result.stdout}\nStderr: {result.stderr}"}
     
 
     
@@ -101,6 +98,4 @@ if __name__ == "__main__":
             r = requests.post(url, data={'chat_id': chat_id}, files={'document': f})
             print(f"Respuesta Telegram: {r.status_code} - {r.text}")
     else:
-        print(f"Build failed: {result['log']}")
-        print("Detailed Modal build log:")
-        print(result['log'])
+        print(f"Build failed: {result["log"]}")
