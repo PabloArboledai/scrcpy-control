@@ -240,15 +240,19 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         if (qrButton != null && qrImageView != null) {
             qrButton.setOnClickListener(v -> {
                 try {
+                    EditText hostEdit = findViewById(R.id.editText_server_host);
+                    String host = hostEdit.getText().toString();
+                    if (TextUtils.isEmpty(host)) host = "100.91.47.35";
+                    
                     // ControlDroid: Datos de vinculación actualizados (665439:46859)
-                    String qrData = "ADB_PAIR:100.91.47.35:46859:665439";
-                    android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
+                    String qrData = "ADB_PAIR:" + host + ":46859:665439";
+                    android.graphics.Bitmap bitmap = org.client.scrcpy.utils.QRCodeUtil.generateQRCode(qrData, 500, 500);
                     qrImageView.setImageBitmap(bitmap);
                     qrImageView.setVisibility(View.VISIBLE);
-                    Toast.makeText(context, "Código QR generado correctamente", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Código QR generado para " + host, Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(context, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("ControlDroid", "QR Error", e);
+                    Toast.makeText(MainActivity.this, "Error al generar QR", Toast.LENGTH_SHORT).show();
                 }
             });
         }
