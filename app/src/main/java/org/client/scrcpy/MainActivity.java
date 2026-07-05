@@ -58,13 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity 
-    // Civer Cloud Integration (Supabase)
-    private static final String SUPABASE_URL = "https://bntwyvwavxgspvcvelay.supabase.co";
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJudHd5dndhdnhnc3B2Y3ZlbGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MjAyNTksImV4cCI6MjA4MjA5NjI1OX0.oK5z3UnEybSVl7Hj4V7UwG4AQvSdzijJEV1ztNRJboQ";
      
-    // Remote Control Integration (Tailscale & Cloudflare)
-    private static final String TAILSCALE_AUTH_KEY = "tskey-auth-kiSzxtfLdA21CNTRL-REFHhXEVvGJmpuMRdWdzGJYcoq8Ws4raf";
-    private static final String CLOUDFLARE_ID = "3bc055261e648805ddf1f41304a304476e5e9";
      extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
 
     // 是否直接连接远程
