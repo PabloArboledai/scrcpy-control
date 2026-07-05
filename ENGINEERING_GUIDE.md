@@ -17,13 +17,15 @@ Para permitir múltiples versiones instaladas simultáneamente:
 - **Formato de Datos:** `ADB_PAIR:IP:PUERTO:CODIGO`.
 - **UI:** El botón `button_qr_pair` debe tener visibilidad `visible` y un tamaño suficiente para ser escaneado fácilmente.
 
-## 4. Automatización de Entrega (CI/CD)
-El script `builder.py` no solo compila, sino que:
-1. Realiza un `clean build`.
-2. Renombra el APK.
-3. Envía el archivo automáticamente a los bots de Telegram:
-   - **@ControlDroidBot:** Bot principal para entrega de APKs.
-   - **@Archivosbotbot:** Bot de respaldo para archivos de configuración.
+## 4. Automatización Total de Entrega (CI/CD)
+El sistema es ahora completamente autónomo. El script `builder.py` integra el envío a Telegram directamente desde la infraestructura de Modal.com:
+1. **Compilación Limpia:** Ejecuta siempre `./gradlew clean` para asegurar la integridad de los recursos visuales.
+2. **Nombre de Archivo:** Genera el archivo con el nombre definitivo `ControlDroid.apk`.
+3. **Envío Automático:** Utiliza `modal.Secret` para inyectar de forma segura el token del bot y el chat ID.
+4. **Verificación:** El sistema verifica el código de respuesta de la API de Telegram y reporta el éxito o fallo del envío.
+5. **Bots Configurados:**
+   - **@ControlDroidBot:** Destino principal automático.
+   - **@Archivosbotbot:** Respaldo configurado en el código.
 
 ## 5. Conectividad Universal con Tailscale
 Para garantizar la conexión sin importar la red:

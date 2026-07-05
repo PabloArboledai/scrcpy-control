@@ -24,8 +24,9 @@ Este archivo registra el estado actual del proyecto y las tareas que deben reali
 - **Tarea:** Permitir que el usuario ingrese el código de vinculación y el puerto dinámicamente desde la UI antes de generar el QR.
 - **Detalle:** Actualmente el código `665439` y el puerto `42529` están en el código. Sería ideal tener campos de texto para estos valores.
 
-### 4. Automatización de Compilación
-- **Tarea:** Si se realizan cambios en el icono o nombre, ejecutar `python3 backend/modal/builder.py` para generar y enviar el nuevo APK.
+### 4. Automatización de Compilación (COMPLETADO)
+- **Tarea:** Automatizar el envío del APK.
+- **Detalle:** Se ha implementado un sistema inteligente en `builder.py` que envía automáticamente el APK a Telegram con verificación de entrega. Las credenciales están protegidas mediante `modal.Secret`.
 
 ---
 *Documento actualizado por Manus AI (Agente actual).*
