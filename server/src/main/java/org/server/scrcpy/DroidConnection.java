@@ -33,7 +33,10 @@ public final class DroidConnection implements Closeable {
 
 
     private static Socket listenAndAccept() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(7007);
+        // ControlDroid: Soporte para relay y puertos configurables
+        int port = 7007;
+        try { port = Integer.parseInt(System.getProperty("scrcpy.port", "7007")); } catch(Exception e) {}
+        ServerSocket serverSocket = new ServerSocket(port);
         Socket sock = null;
         try {
             sock = serverSocket.accept();

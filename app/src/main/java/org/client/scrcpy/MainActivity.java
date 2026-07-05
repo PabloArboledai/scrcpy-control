@@ -65,6 +65,12 @@ public class MainActivity
     }
 
     private boolean isVpnConnection(String ip) {
+        // ControlDroid: Detección universal de red
+        if (ip == null) return false;
+        boolean isTailscale = ip.startsWith("100.");
+        boolean isZeroTier = ip.startsWith("10.147.") || ip.startsWith("172.22.");
+        boolean isLocal = ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172.");
+        logConnection("Analizando IP: " + ip + " (Tailscale: " + isTailscale + ", Local: " + isLocal + ")");
         return ip.startsWith("100."); // Rango típico de Tailscale
     }
      
