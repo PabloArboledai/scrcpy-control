@@ -112,7 +112,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         if (startButton != null) {
             startButton.setOnClickListener(v -> {
                 EditText hostEdit = findViewById(R.id.editText_server_host);
-                serverAdr = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35:34315";
+                serverAdr = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35:42529";
                 connectScrcpyServer(serverAdr);
             });
         }
@@ -123,7 +123,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
                 try {
                     EditText hostEdit = findViewById(R.id.editText_server_host);
                     String host = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35";
-                    String qrData = "ADB_PAIR:" + host + ":46859:665439";
+                    String qrData = "ADB_PAIR:" + host + ":42529:665439";
                     android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
                     ImageView qrImageView = findViewById(R.id.imageView_qr);
                     if (qrImageView != null) {
