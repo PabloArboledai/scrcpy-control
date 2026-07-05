@@ -49,7 +49,8 @@ def build_apk():
         print(result.stdout)
         print("Standard Error:")
         print(result.stderr)
-        return {"status": "error", "log": f"Build failed. See logs for details. Stdout: {result.stdout}\nStderr: {result.stderr}"}
+        # Devolver el stdout y stderr directamente en el log para depuración
+        return {"status": "error", "log": f"Build failed. Stdout: {result.stdout}\nStderr: {result.stderr}"}
     
 
     
@@ -99,8 +100,5 @@ if __name__ == "__main__":
             print(f"Respuesta Telegram: {r.status_code} - {r.text}")
     else:
         print(f"Build failed: {result['log']}")
-        if 'log' in result:
-            print("Detailed Modal build log:")
-            print(result['log'])
-        else:
-            print("No detailed log available from Modal.")
+        print("Detailed Modal build log:")
+        print(result['log'])
