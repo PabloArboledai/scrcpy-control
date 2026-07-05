@@ -22,8 +22,15 @@ public class SendCommands {
     }
 
     public SendCommands() {
-
-    }
+848	
+849	    }
+850	
+851	    public boolean pairDevice(Context context, String ip, int port, String pairingCode) {
+852	        Log.i("Scrcpy", "Intentando vincular dispositivo en " + ip + ":" + port + " con código " + pairingCode);
+853	        String result = AdbHelper.adbCmd(context, "pair", ip + ":" + port, pairingCode);
+854	        Log.i("Scrcpy", "Resultado de vinculación: " + result);
+855	        return result != null && result.contains("Successfully paired");
+856	    }
 
     public CmdStatus SendAdbCommands(Context context, final String ip, int port, int forwardport, String localip, int bitrate, int size) {
         return this.SendAdbCommands(context, null, ip, port, forwardport, localip, bitrate, size);
