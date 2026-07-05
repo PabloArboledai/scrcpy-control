@@ -13,7 +13,7 @@ android {
         versionCode 1
         versionName "1.4.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        setProperty("archivesBaseName", "ControlDroid")
+        archivesBaseName = "ControlDroid"
     }
 
     applicationVariants.all { variant ->

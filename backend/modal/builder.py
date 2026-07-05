@@ -69,15 +69,16 @@ def build_apk():
     print(f"Found APKs: {apks}")
         
     apk_path = apks[0]
-    # Nombre final solicitado por el usuario
+    # --- RENOMBRADO FÍSICO FORZADO ---
     final_name = "ControlDroid.apk"
+    print(f"Forzando renombrado físico de {apk_path} a {final_name}...")
     
-    with open(apk_path, "rb") as f:
+    # Copiar y renombrar físicamente
+    import shutil
+    shutil.copy2(apk_path, final_name)
+    
+    with open(final_name, "rb") as f:
         apk_data = f.read()
-        
-    # Guardar localmente para el envío
-    with open(final_name, "wb") as f:
-        f.write(apk_data)
 
     # --- ENVÍO AUTOMÁTICO A TELEGRAM (DENTRO DE MODAL) ---
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
