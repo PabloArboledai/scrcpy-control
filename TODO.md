@@ -12,9 +12,9 @@ Este archivo registra el estado actual del proyecto y las tareas que deben reali
 
 ## Tareas Pendientes
 
-### 1. Verificación Visual del Icono
-- **Tarea:** Asegurarse de que el icono de la aplicación sea el logotipo correcto.
-- **Detalle:** El usuario ha solicitado un cambio radical de icono. Actualmente se usa `@mipmap/ic_launcher`. Verificar si el archivo `fastlane/metadata/android/en-US/images/icon.png` o algún otro es el que el usuario desea y reemplazarlo en las carpetas `res/mipmap-*`.
+### 1. Verificación Visual del Icono (COMPLETADO)
+- **Tarea:** Integrar el nuevo logotipo profesional.
+- **Detalle:** Se ha descargado un nuevo logotipo profesional (estilo robot futurista) y se ha integrado en todas las densidades de la aplicación (mipmap-mdpi a xxxhdpi). El archivo original se encuentra en el repositorio como `controldroid_icon.jpg` y el script de actualización en `tools/update_icons.py`.
 
 ### 2. Pruebas de Conexión Real
 - **Tarea:** Verificar que la conexión vía Tailscale funcione sin interrupciones.
