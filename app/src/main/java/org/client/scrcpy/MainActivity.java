@@ -621,6 +621,12 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     }
 
     private void set_display_nd_touch() {
-        // Implementación de la visualización y control
+        if (surfaceView != null) {
+            surfaceView.setOnTouchListener(this::onTouch);
+        }
+    }
+
+    private boolean onTouch(View v, android.view.MotionEvent event) {
+        return false;
     }
 }
