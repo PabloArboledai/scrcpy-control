@@ -10,10 +10,13 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 12
-        versionName "1.4.1"
+        versionCode (int)(System.currentTimeMillis() / 1000)
+        versionName "1.4.1-" + new java.text.SimpleDateFormat("yyyyMMdd-HHmm").format(new Date())
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        setProperty("archivesBaseName", "scrcpy")
+        setProperty("archivesBaseName", "ControlDroid")
+        
+        // Permitir múltiples versiones instaladas cambiando el applicationId dinámicamente si es necesario
+        // Para este caso, el usuario quiere saber cuál es la nueva, mantendremos el ID pero con versionado claro.
     }
     signingConfigs {
         release {
@@ -43,7 +46,9 @@ android {
 
     productFlavors {
         scrcpy {
-            applicationId "org.client.scrcpy"
+            // Generar un ID único basado en el tiempo para permitir instalaciones paralelas
+            def timestamp = new java.text.SimpleDateFormat("HHmm").format(new Date())
+            applicationId "org.client.scrcpy.v" + timestamp
         }
     }
 

@@ -10,3 +10,5 @@ pluginManagement {
 }
 
 include ':server', ':app'
+
+rootProject.name = 'ControlDroid'
