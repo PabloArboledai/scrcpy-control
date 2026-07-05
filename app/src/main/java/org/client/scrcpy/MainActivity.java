@@ -239,24 +239,23 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
             });
         }
 
+        // ControlDroid: Botón de vinculación QR
         final Button qrButton = findViewById(R.id.button_qr_pair);
-        final ImageView qrImageView = findViewById(R.id.imageView_qr);
-        if (qrButton != null && qrImageView != null) {
+        if (qrButton != null) {
             qrButton.setOnClickListener(v -> {
+                Toast.makeText(MainActivity.this, "Generando QR...", Toast.LENGTH_SHORT).show();
                 try {
                     EditText hostEdit = findViewById(R.id.editText_server_host);
-                    String host = (hostEdit != null) ? hostEdit.getText().toString() : "";
-                    if (TextUtils.isEmpty(host)) host = "100.91.47.35";
-                    
-                    // ControlDroid: Datos de vinculación actualizados (665439:46859)
+                    String host = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35";
                     String qrData = "ADB_PAIR:" + host + ":46859:665439";
                     android.graphics.Bitmap bitmap = org.client.scrcpy.utils.QRCodeUtil.generateQRCode(qrData, 500, 500);
-                    qrImageView.setImageBitmap(bitmap);
-                    qrImageView.setVisibility(View.VISIBLE);
-                    Toast.makeText(MainActivity.this, "Código QR generado para " + host, Toast.LENGTH_LONG).show();
+                    ImageView qrImageView = findViewById(R.id.imageView_qr);
+                    if (qrImageView != null) {
+                        qrImageView.setImageBitmap(bitmap);
+                        qrImageView.setVisibility(View.VISIBLE);
+                    }
                 } catch (Exception e) {
                     Log.e("ControlDroid", "QR Error", e);
-                    Toast.makeText(MainActivity.this, "Error al generar QR", Toast.LENGTH_SHORT).show();
                 }
             });
         }
