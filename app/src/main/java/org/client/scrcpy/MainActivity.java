@@ -547,8 +547,8 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
                 
                 // ControlDroid: Vinculación automática con datos de la imagen
                 if (serverHost.equals("100.91.47.35")) {
-                    logConnection("Vinculando con Honor en puerto 34771...");
-                    sendCommands.pairDevice(context, "100.91.47.35", 34771, "312507");
+                    logConnection("Vinculando con Honor en puerto 46859...");
+                    sendCommands.pairDevice(context, "100.91.47.35", 46859, "665439");
                 }
 
                 SendCommands.CmdStatus sendStatus = sendCommands.SendAdbCommands(context, serverHost,
