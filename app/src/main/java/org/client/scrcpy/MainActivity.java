@@ -627,7 +627,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         }
     }
 
-    private boolean onTouch(View v, android.view.MotionEvent event) {
+    private boolean onTouch(View v, MotionEvent event) {
         return false;
     }
 }
