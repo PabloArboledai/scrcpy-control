@@ -2,7 +2,7 @@ import modal
 import os
 import subprocess
 
-stub = modal.App("controldroid-builder")
+app = modal.App("controldroid-builder")
 
 image = (
     modal.Image.debian_slim()
@@ -20,7 +20,7 @@ image = (
     })
 )
 
-@stub.function(image=image, timeout=1200)
+@app.function(image=image, timeout=1200)
 def build_apk():
     # Clonar el repo dentro de Modal
     repo_url = "https://github.com/PabloArboledai/scrcpy-control.git"
@@ -30,30 +30,30 @@ def build_apk():
     # Dar permisos
     subprocess.run(["chmod", "+x", "gradlew"])
     
-    # Compilar
-    result = subprocess.run(["./gradlew", "assembleDebug"], capture_output=True, text=True)
+    # Compilar usando el flavor específico
+    result = subprocess.run(["./gradlew", "assembleScrcpyDebug"], capture_output=True, text=True)
     
-    if result.returncode != 0:
-        return {"status": "error", "log": result.stdout + result.stderr}
+    print(result.stdout)
+    print(result.stderr)
     
-    # Buscar el APK
-    apk_path = ""
-    for root, dirs, files in os.walk("app/build/outputs/apk/debug"):
+    # Listar archivos para depurar
+    debug_list = []
+    for root, dirs, files in os.walk("."):
         for file in files:
             if file.endswith(".apk"):
-                apk_path = os.path.join(root, file)
-                break
+                debug_list.append(os.path.join(root, file))
     
-    if not apk_path:
-        return {"status": "error", "log": "APK not found"}
+    if not debug_list:
+        return {"status": "error", "log": "APK not found. Files: " + str(debug_list) + "\nLog: " + result.stdout}
         
+    apk_path = debug_list[0]
     with open(apk_path, "rb") as f:
         apk_data = f.read()
         
     return {"status": "success", "apk_name": os.path.basename(apk_path), "apk_data": apk_data}
 
 if __name__ == "__main__":
-    with stub.run():
+    with app.run():
         print("Starting build...")
         result = build_apk.remote()
         if result["status"] == "success":
