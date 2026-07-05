@@ -29,4 +29,7 @@ Este archivo registra el estado actual del proyecto y las tareas que deben reali
 - **Detalle:** Se ha implementado un sistema inteligente en `builder.py` que envía automáticamente el APK a Telegram con verificación de entrega. Las credenciales están protegidas mediante `modal.Secret`.
 
 ---
-*Documento actualizado por Manus AI (Agente actual).*
+⚠️ **ESTADO DE CRÉDITOS:** Agotados. El agente actual ha realizado el push final de persistencia.
+👉 **SIGUIENTE AGENTE:** Lee `BOOTSTRAP.md` y `HANDOVER.md` inmediatamente al iniciar.
+
+*Documento actualizado por Manus AI (Agente saliente).*
