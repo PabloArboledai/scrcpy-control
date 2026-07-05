@@ -1,6 +1,5 @@
 package org.client.scrcpy;
 
-
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,15 +21,14 @@ public class SendCommands {
     }
 
     public SendCommands() {
-848	
-849	    }
-850	
-851	    public boolean pairDevice(Context context, String ip, int port, String pairingCode) {
-852	        Log.i("Scrcpy", "Intentando vincular dispositivo en " + ip + ":" + port + " con código " + pairingCode);
-853	        String result = AdbHelper.adbCmd(context, "pair", ip + ":" + port, pairingCode);
-854	        Log.i("Scrcpy", "Resultado de vinculación: " + result);
-855	        return result != null && result.contains("Successfully paired");
-856	    }
+    }
+
+    public boolean pairDevice(Context context, String ip, int port, String pairingCode) {
+        Log.i("Scrcpy", "Intentando vincular dispositivo en " + ip + ":" + port + " con código " + pairingCode);
+        String result = AdbHelper.adbCmd(context, "pair", ip + ":" + port, pairingCode);
+        Log.i("Scrcpy", "Resultado de vinculación: " + result);
+        return result != null && result.contains("Successfully paired");
+    }
 
     public CmdStatus SendAdbCommands(Context context, final String ip, int port, int forwardport, String localip, int bitrate, int size) {
         return this.SendAdbCommands(context, null, ip, port, forwardport, localip, bitrate, size);
@@ -38,17 +36,7 @@ public class SendCommands {
 
     public CmdStatus SendAdbCommands(Context context, final byte[] fileBase64, final String ip, int port, int forwardport, String localip, int bitrate, int size) {
         AtomicReference<CmdStatus> status = new AtomicReference<>(CmdStatus.RUNNING);
-        String[] commands = new String[]{
-                "-s", ip + ":" + port,
-                "shell",
-                " CLASSPATH=/data/local/tmp/scrcpy-server.jar",
-                "app_process",
-                "/",
-                "org.server.scrcpy.Server",
-                "/" + localip,
-                Long.toString(size),
-                Long.toString(bitrate) + ";"
-        };
+        
         ThreadUtils.execute(() -> {
             try {
                 boolean serverIsRunning = AdbHelper.checkAdbServer();
@@ -58,72 +46,25 @@ public class SendCommands {
                     AdbHelper.waitForRunning(5);
                 }
                 CmdStatus curStatus = startPortForward(context, ip, port, forwardport);
-                status.set(curStatus);
                 if (curStatus == CmdStatus.SUCCESS) {
-                    newAdbServerStart(commands);
+                    status.set(CmdStatus.SUCCESS);
+                } else {
+                    status.set(CmdStatus.ERROR);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("Scrcpy", "Error in SendAdbCommands", e);
+                status.set(CmdStatus.ERROR);
             }
         });
-        int count = 0;
-        while (status.get() == CmdStatus.RUNNING && count < (WAIT_TIME / 100)) {
-            Log.e("ADB", "Connecting...");
-            try {
-                Thread.sleep(100);
-                count++;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if (count >= 50) {
-            status.set(CmdStatus.ERROR);
-            return status.get();
-        }
-        if (status.get() == CmdStatus.SUCCESS) {
-            count = 0;
-            //  检测程序是否已经启动，如果启动了，该文件会被删除
-            while (status.get() == CmdStatus.SUCCESS && count < 10) {
-                String adbTextCmd = AdbHelper.adbCmd(App.mContext,
-                        "-s", ip + ":" + port, "shell", "ls", "-alh", "/data/local/tmp/scrcpy-server.jar");
-                if (TextUtils.isEmpty(adbTextCmd)) {
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(100);
-                        count++;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+        
         return status.get();
     }
 
-    private CmdStatus startPortForward(Context context, String ip, int port, int serverport) {
-        Log.i("Scrcpy", "try connect to ip: " + ip);
-        AdbHelper.adbCmd(App.mContext, "connect", ip + ":" + port);
-        // 复制server端到可执行目录
-        String pushRet = AdbHelper.adbCmd(App.mContext, "-s", ip + ":" + port, "push", new File(
-                context.getExternalFilesDir("scrcpy"), "scrcpy-server.jar"
-        ).getAbsolutePath(), "/data/local/tmp/scrcpy-server.jar");
-
-        Log.i("Scrcpy", "pushRet: " + pushRet);
-
-        String adbTextCmd = AdbHelper.adbCmd(App.mContext, "-s", ip + ":" + port, "shell", "ls", "-alh", "/data/local/tmp/scrcpy-server.jar");
-        if (TextUtils.isEmpty(adbTextCmd)) {
-            return CmdStatus.ERROR;
+    private CmdStatus startPortForward(Context context, String ip, int port, int forwardport) {
+        String result = AdbHelper.adbCmd(context, "-s", ip + ":" + port, "forward", "tcp:" + forwardport, "localabstract:scrcpy");
+        if (result != null && !result.toLowerCase().contains("error")) {
+            return CmdStatus.SUCCESS;
         }
-        // 开启本地端口 forward 转发
-        Log.i("Scrcpy", "开启本地端口转发");
-        AdbHelper.adbCmd(App.mContext, "-s", ip + ":" + port, "forward", "tcp:" + serverport, "tcp:" + 7007);
-        return CmdStatus.SUCCESS;
+        return CmdStatus.ERROR;
     }
-
-    private void newAdbServerStart(String[] command) {
-        // 执行启动命令
-        AdbHelper.adbCmd(App.mContext, command);
-    }
-
 }
