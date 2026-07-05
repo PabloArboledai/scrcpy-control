@@ -123,7 +123,10 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
                 try {
                     EditText hostEdit = findViewById(R.id.editText_server_host);
                     String host = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35";
-                    String qrData = "ADB_PAIR:" + host + ":42529:665439";
+                    // Datos de vinculación inalámbrica dinámicos (pueden ser actualizados por el usuario)
+                    String qrData = "WIFI:S:ControlDroid;T:WPA;P:665439;;"; // Ejemplo de formato de vinculación WiFi si fuera necesario
+                    // Formato ADB Pair: ADB_PAIR:IP:PORT:PAIRING_CODE
+                    qrData = "ADB_PAIR:" + host + ":42529:665439"; 
                     android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
                     ImageView qrImageView = findViewById(R.id.imageView_qr);
                     if (qrImageView != null) {
