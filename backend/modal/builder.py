@@ -30,7 +30,12 @@ def build_apk():
     # Dar permisos
     subprocess.run(["chmod", "+x", "gradlew"])
     
+    # Compilación limpia para evitar caché antigua
+    print("Limpiando proyecto...")
+    subprocess.run(["./gradlew", "clean"], check=True)
+    
     # Compilar usando el flavor específico
+    print("Compilando ControlDroid...")
     result = subprocess.run(["./gradlew", "assembleScrcpyDebug"], capture_output=True, text=True)
     
     print(result.stdout)
@@ -56,9 +61,20 @@ if __name__ == "__main__":
     with app.run():
         print("Starting build...")
         result = build_apk.remote()
-        if result["status"] == "success":
-            with open(result["apk_name"], "wb") as f:
-                f.write(result["apk_data"])
-            print(f"Build successful: {result['apk_name']}")
-        else:
-            print(f"Build failed: {result['log']}")
+    if result["status"] == "success":
+        apk_name = result["apk_name"]
+        with open(apk_name, "wb") as f:
+            f.write(result["apk_data"])
+        print(f"Build successful: {apk_name}")
+        
+        # Enviar a Telegram manualmente desde aquí también por seguridad
+        import requests
+        bot_token = "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew"
+        chat_id = "8776480439"
+        url = f"https://api.telegram.org/bot{bot_token}/sendDocument"
+        print(f"Enviando {apk_name} a Telegram...")
+        with open(apk_name, 'rb') as f:
+            r = requests.post(url, data={'chat_id': chat_id}, files={'document': f})
+            print(f"Respuesta Telegram: {r.status_code} - {r.text}")
+    else:
+        print(f"Build failed: {result['log']}")

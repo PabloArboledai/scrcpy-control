@@ -237,19 +237,21 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
 
         final Button qrButton = findViewById(R.id.button_qr_pair);
         final ImageView qrImageView = findViewById(R.id.imageView_qr);
-        qrButton.setOnClickListener(v -> {
-            try {
-                // Generar QR con los datos de vinculación actuales (NUEVOS DATOS)
-                String qrData = "ADB_PAIR:100.91.47.35:46859:665439";
-                android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
-                qrImageView.setImageBitmap(bitmap);
-                qrImageView.setVisibility(View.VISIBLE);
-                Toast.makeText(context, "Escanea este código con el otro dispositivo", Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(context, "Error al generar QR", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (qrButton != null && qrImageView != null) {
+            qrButton.setOnClickListener(v -> {
+                try {
+                    // ControlDroid: Datos de vinculación actualizados (665439:46859)
+                    String qrData = "ADB_PAIR:100.91.47.35:46859:665439";
+                    android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
+                    qrImageView.setImageBitmap(bitmap);
+                    qrImageView.setVisibility(View.VISIBLE);
+                    Toast.makeText(context, "Código QR generado correctamente", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(context, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
         get_saved_preferences();
         EditText editText = findViewById(R.id.editText_server_host);
