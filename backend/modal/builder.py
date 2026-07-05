@@ -99,3 +99,8 @@ if __name__ == "__main__":
             print(f"Respuesta Telegram: {r.status_code} - {r.text}")
     else:
         print(f"Build failed: {result['log']}")
+        if 'log' in result:
+            print("Detailed Modal build log:")
+            print(result['log'])
+        else:
+            print("No detailed log available from Modal.")
