@@ -58,6 +58,16 @@ import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity 
+    // ControlDroid Enhanced Logic
+    private void logConnection(String message) {
+        Log.d("ControlDroid", message);
+        // Aquí se podría añadir a un TextView en la UI en el futuro
+    }
+
+    private boolean isVpnConnection(String ip) {
+        return ip.startsWith("100."); // Rango típico de Tailscale
+    }
+     
      
      extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
 
