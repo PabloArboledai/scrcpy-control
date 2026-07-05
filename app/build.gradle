@@ -15,6 +15,12 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "ControlDroid")
         
+        applicationVariants.all { variant ->
+            variant.outputs.all {
+                outputFileName = "ControlDroid_${variant.versionName}.apk"
+            }
+        }
+        
         // Permitir múltiples versiones instaladas cambiando el applicationId dinámicamente si es necesario
         // Para este caso, el usuario quiere saber cuál es la nueva, mantendremos el ID pero con versionado claro.
     }
