@@ -38,12 +38,15 @@ def build_apk():
     # Compilar usando el flavor específico
     print("Compilando ControlDroid...")
     # Usar --stacktrace y --info para obtener detalles en caso de error
-    result = subprocess.run(["./gradlew", "assembleScrcpyDebug", "--stacktrace"], capture_output=True, text=True)
+    result = subprocess.run(["./gradlew", "compileScrcpyDebugJavaWithJavac", "--stacktrace", "--info"], capture_output=True, text=True)
     
     print("--- GRADLE STDOUT ---")
     print(result.stdout)
     print("--- GRADLE STDERR ---")
     print(result.stderr)
+    
+    if result.returncode != 0:
+        return {"status": "error", "log": result.stdout + "\n" + result.stderr}
     
     # Listar archivos para encontrar el APK
     apks = []
