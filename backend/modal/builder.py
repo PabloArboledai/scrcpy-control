@@ -1,6 +1,7 @@
 import modal
 import os
 import subprocess
+from datetime import datetime
 
 app = modal.App("controldroid-builder")
 
@@ -24,15 +25,15 @@ image = (
 def build_apk():
     # Clonar el repo dentro de Modal
     repo_url = os.environ.get("REPO_URL", "https://github.com/PabloArboledai/scrcpy-control.git")
-    subprocess.run(["git", "clone", repo_url, "/app"])
+    subprocess.run(["git", "clone", "--depth", "1", repo_url, "/app"])
     os.chdir("/app")
     
     # Dar permisos
     subprocess.run(["chmod", "+x", "gradlew"])
     
-    # Compilación limpia para evitar caché antigua
+    # Intentar limpieza, si falla ignorar (a veces clean falla en entornos efímeros)
     print("Limpiando proyecto...")
-    subprocess.run(["./gradlew", "clean"], check=True)
+    subprocess.run(["./gradlew", "clean"])
     
     # Compilar usando el flavor específico
     print("Compilando ControlDroid...")
@@ -41,33 +42,38 @@ def build_apk():
     print(result.stdout)
     print(result.stderr)
     
-    # Listar archivos para depurar
-    debug_list = []
-    for root, dirs, files in os.walk("."):
+    # Listar archivos para encontrar el APK
+    apks = []
+    for root, dirs, files in os.walk("app/build/outputs/apk"):
         for file in files:
             if file.endswith(".apk"):
-                debug_list.append(os.path.join(root, file))
+                apks.append(os.path.join(root, file))
     
-    if not debug_list:
-        return {"status": "error", "log": "APK not found. Files: " + str(debug_list) + "\nLog: " + result.stdout}
+    if not apks:
+        return {"status": "error", "log": "APK not found. Log: " + result.stdout}
         
-    apk_path = debug_list[0]
+    apk_path = apks[0]
+    # Generar nombre único
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    final_name = f"ControlDroid_{timestamp}.apk"
+    
     with open(apk_path, "rb") as f:
         apk_data = f.read()
         
-    return {"status": "success", "apk_name": os.path.basename(apk_path), "apk_data": apk_data}
+    return {"status": "success", "apk_name": final_name, "apk_data": apk_data}
 
 if __name__ == "__main__":
     with app.run():
         print("Starting build...")
         result = build_apk.remote()
+        
     if result["status"] == "success":
         apk_name = result["apk_name"]
         with open(apk_name, "wb") as f:
             f.write(result["apk_data"])
         print(f"Build successful: {apk_name}")
         
-        # Enviar a Telegram manualmente desde aquí también por seguridad
+        # Enviar a Telegram
         import requests
         bot_token = "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew"
         chat_id = "8776480439"
