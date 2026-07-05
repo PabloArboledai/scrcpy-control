@@ -2,7 +2,7 @@ import modal
 import os
 import subprocess
 
-stub = modal.Stub("controldroid-builder")
+stub = modal.App("controldroid-builder")
 
 image = (
     modal.Image.debian_slim()

@@ -57,7 +57,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity 
+public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
     // ControlDroid Enhanced Logic
     private void logConnection(String message) {
         Log.d("ControlDroid", message);
@@ -75,7 +75,6 @@ public class MainActivity
     }
      
      
-     extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
 
     // 是否直接连接远程
     public final static String START_REMOTE = "start_remote_headless";
