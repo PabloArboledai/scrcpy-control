@@ -23,7 +23,7 @@ image = (
 @app.function(image=image, timeout=1200)
 def build_apk():
     # Clonar el repo dentro de Modal
-    repo_url = "https://github.com/PabloArboledai/scrcpy-control.git"
+    repo_url = os.environ.get("REPO_URL", "https://github.com/PabloArboledai/scrcpy-control.git")
     subprocess.run(["git", "clone", repo_url, "/app"])
     os.chdir("/app")
     

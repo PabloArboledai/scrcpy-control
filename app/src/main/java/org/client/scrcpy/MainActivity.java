@@ -224,7 +224,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         }
         if (headlessMode && first_time) {
             getAttributes();
-            connectScrcpyServer(PreUtils.get(this, Constant.CONTROL_REMOTE_ADDR, "192.168.205.42:42529"));
+            connectScrcpyServer(PreUtils.get(this, Constant.CONTROL_REMOTE_ADDR, "100.91.47.35:34315"));
         }
         if (headlessMode) {
             View scrollView = findViewById(R.id.main_scroll_view);
@@ -341,7 +341,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         final EditText editTextServerHost = findViewById(R.id.editText_server_host);
         final Switch aSwitch0 = findViewById(R.id.switch0);
         final Switch aSwitch1 = findViewById(R.id.switch1);
-        String historySpServerAdr = PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "192.168.205.42:42529");
+        String historySpServerAdr = PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "100.91.47.35:34315");
         if (TextUtils.isEmpty(historySpServerAdr)) {
             String[] historyList = getHistoryList();
             if (historyList.length > 0) {
@@ -680,7 +680,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         if (resumeScrcpy) {
             if (!serviceBound) {
                 resumeScrcpy = false;
-                connectScrcpyServer(PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "192.168.205.42:42529"));
+                connectScrcpyServer(PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "100.91.47.35:34315"));
             }
         }
     }
@@ -828,7 +828,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
                 Dialog.displayDialog(this, getString(R.string.connect_faild),
                         getString(R.string.connect_faild_ask), () -> {
                             // 重试连接
-                            connectScrcpyServer(PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "192.168.205.42:42529"));
+                            connectScrcpyServer(PreUtils.get(context, Constant.CONTROL_REMOTE_ADDR, "100.91.47.35:34315"));
                         }, () -> {
                             // 取消重试
                             finishAndRemoveTask();
