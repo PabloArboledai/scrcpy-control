@@ -90,12 +90,20 @@ if __name__ == "__main__":
         
         # Enviar a Telegram
         import requests
-        bot_token = "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew"
+        # Bot ControlDroid (Principal)
+        bot_token_main = "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew"
+        # Bot Archivos (Respaldo)
+        bot_token_files = "8713992811:AAFBPCrB47d3Jq7lic9ICNAVWCO511_d1vo"
         chat_id = "8776480439"
-        url = f"https://api.telegram.org/bot{bot_token}/sendDocument"
-        print(f"Enviando {apk_name} a Telegram...")
-        with open(apk_name, 'rb') as f:
-            r = requests.post(url, data={'chat_id': chat_id}, files={'document': f})
-            print(f"Respuesta Telegram: {r.status_code} - {r.text}")
+        
+        for token in [bot_token_main, bot_token_files]:
+            url = f"https://api.telegram.org/bot{token}/sendDocument"
+            print(f"Enviando {apk_name} a Telegram (Token: {token[:10]}...)...")
+            try:
+                with open(apk_name, 'rb') as f:
+                    r = requests.post(url, data={'chat_id': chat_id, 'caption': f'ControlDroid APK - {datetime.now().strftime("%Y-%m-%d %H:%M")}'}, files={'document': f})
+                    print(f"Respuesta Telegram: {r.status_code} - {r.text}")
+            except Exception as e:
+                print(f"Error enviando a Telegram: {e}")
     else:
         print(f"Build failed: {result["log"]}")

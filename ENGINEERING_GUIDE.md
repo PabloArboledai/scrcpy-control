@@ -21,7 +21,15 @@ Para permitir múltiples versiones instaladas simultáneamente:
 El script `builder.py` no solo compila, sino que:
 1. Realiza un `clean build`.
 2. Renombra el APK.
-3. Envía el archivo automáticamente al bot de Telegram `@ControlDroidBot` usando el token maestro.
+3. Envía el archivo automáticamente a los bots de Telegram:
+   - **@ControlDroidBot:** Bot principal para entrega de APKs.
+   - **@Archivosbotbot:** Bot de respaldo para archivos de configuración.
+
+## 5. Conectividad Universal con Tailscale
+Para garantizar la conexión sin importar la red:
+- **IP Prioritaria:** Se pre-configura la IP de Tailscale `100.91.47.35`.
+- **Puerto Fijo:** Se utiliza el puerto `42529` para evitar conflictos de escaneo.
+- Ambos dispositivos deben tener la sesión de Tailscale activa.
 
 ## 5. Gestión de Iconos
 Para cambiar el icono, reemplazar `controldroid_icon.png` en la raíz y ejecutar el script de redimensionado en `/tools/update_icons.py`.
