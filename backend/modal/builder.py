@@ -26,25 +26,32 @@ def build_apk():
     # Clonar el repo dentro de Modal
     repo_url = os.environ.get("REPO_URL", "https://github.com/PabloArboledai/scrcpy-control.git")
     # Limpiar directorio si existe y clonar de nuevo
-    subprocess.run(["rm", "-rf", "/app"])
+    print("Cleaning existing /app directory...")
+    subprocess.run(["rm", "-rf", "/app"], check=True)
+    print(f"Cloning repository {repo_url}...")
     subprocess.run(["git", "clone", "--depth", "1", "-b", "main", repo_url, "/app"], check=True)
     os.chdir("/app")
     
     # Dar permisos
-    subprocess.run(["chmod", "+x", "gradlew"])
+    print("Setting execute permissions for gradlew...")
+    subprocess.run(["chmod", "+x", "gradlew"], check=True)
     
-    # Intentar limpieza, si falla ignorar (a veces clean falla en entornos efímeros)
-    print("Limpiando proyecto...")
+    print("Cleaning project with gradlew clean...")
+    # No usar check=True para clean, ya que puede fallar en entornos efímeros sin ser un error crítico
     subprocess.run(["./gradlew", "clean"])
     
-    # Compilar usando el flavor específico
-    print("Compilando ControlDroid...")
-    # Usar --stacktrace y --info para obtener detalles en caso de error
-    # No capturamos la salida para que se vea en los logs de Modal directamente
-    result = subprocess.run(["./gradlew", "assembleScrcpyDebug", "--stacktrace"])
+    print("Compiling ControlDroid APK with gradlew assembleScrcpyDebug --stacktrace...")
+    # Capturamos la salida para poder incluirla en el log de error si falla
+    result = subprocess.run(["./gradlew", "assembleScrcpyDebug", "--stacktrace"], capture_output=True, text=True, check=False)
     
     if result.returncode != 0:
-        return {"status": "error", "log": "Build failed. Check Modal logs for details."}
+        print("Gradle build failed. Standard Output:")
+        print(result.stdout)
+        print("Standard Error:")
+        print(result.stderr)
+        return {"status": "error", "log": f"Build failed. See logs for details. Stdout: {result.stdout}\nStderr: {result.stderr}"}
+    
+
     
     # Listar archivos para encontrar el APK
     apks = []
@@ -54,7 +61,10 @@ def build_apk():
                 apks.append(os.path.join(root, file))
     
     if not apks:
-        return {"status": "error", "log": "APK not found. Log: " + result.stdout}
+        print("APK not found after successful build attempt.")
+        return {"status": "error", "log": "APK not found. Check build output for errors."}
+    
+    print(f"Found APKs: {apks}")
         
     apk_path = apks[0]
     # Generar nombre único
@@ -76,6 +86,7 @@ if __name__ == "__main__":
         with open(apk_name, "wb") as f:
             f.write(result["apk_data"])
         print(f"Build successful: {apk_name}")
+        print(f"APK saved locally as {apk_name}")
         
         # Enviar a Telegram
         import requests
