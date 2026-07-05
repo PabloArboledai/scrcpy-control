@@ -228,12 +228,16 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         landscape = false;
         setContentView(R.layout.activity_main);
-        final Button startButton = findViewById(R.id.button_start);
+        
         sendCommands = new SendCommands();
-        startButton.setOnClickListener(v -> {
-            getAttributes();
-            connectScrcpyServer(serverAdr);
-        });
+        
+        final Button startButton = findViewById(R.id.button_start);
+        if (startButton != null) {
+            startButton.setOnClickListener(v -> {
+                getAttributes();
+                connectScrcpyServer(serverAdr);
+            });
+        }
 
         final Button qrButton = findViewById(R.id.button_qr_pair);
         final ImageView qrImageView = findViewById(R.id.imageView_qr);
@@ -241,7 +245,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
             qrButton.setOnClickListener(v -> {
                 try {
                     EditText hostEdit = findViewById(R.id.editText_server_host);
-                    String host = hostEdit.getText().toString();
+                    String host = (hostEdit != null) ? hostEdit.getText().toString() : "";
                     if (TextUtils.isEmpty(host)) host = "100.91.47.35";
                     
                     // ControlDroid: Datos de vinculación actualizados (665439:46859)
@@ -259,10 +263,14 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
 
         get_saved_preferences();
         EditText editText = findViewById(R.id.editText_server_host);
-        findViewById(R.id.history_list).setOnClickListener(v -> {
-            editText.clearFocus();
-            showListPopulWindow(editText);
-        });
+        View historyList = findViewById(R.id.history_list);
+        if (historyList != null && editText != null) {
+            historyList.setOnClickListener(v -> {
+                editText.clearFocus();
+                showListPopulWindow(editText);
+            });
+        }
+        
         if (headlessMode) {
             View scrollView = findViewById(R.id.main_scroll_view);
             if (scrollView != null) {
