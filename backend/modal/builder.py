@@ -67,9 +67,8 @@ def build_apk():
     print(f"Found APKs: {apks}")
         
     apk_path = apks[0]
-    # Generar nombre único
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    final_name = f"ControlDroid_{timestamp}.apk"
+    # Nombre final solicitado por el usuario
+    final_name = "ControlDroid.apk"
     
     with open(apk_path, "rb") as f:
         apk_data = f.read()

@@ -18,7 +18,7 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "ControlDroid_${variant.versionName}.apk"
+            outputFileName = "ControlDroid.apk"
         }
     }
     signingConfigs {
