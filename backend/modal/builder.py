@@ -37,7 +37,7 @@ def build_apk():
     
     # Compilar usando el flavor específico
     print("Compilando ControlDroid...")
-    result = subprocess.run(["./gradlew", "assembleScrcpyDebug"], capture_output=True, text=True)
+    result = subprocess.run(["./gradlew", "assembleDebug"], capture_output=True, text=True)
     
     print(result.stdout)
     print(result.stderr)
