@@ -69,12 +69,12 @@ def build_apk():
     print(f"Found APKs: {apks}")
         
     apk_path = apks[0]
-    # --- RENOMBRADO FÍSICO FORZADO ---
-    final_name = "ControlDroid.apk"
-    print(f"Forzando renombrado físico de {apk_path} a {final_name}...")
-    
-    # Copiar y renombrar físicamente
+    # --- DETECCIÓN DE NOMBRE VERSIONADO ---
     import shutil
+    actual_apk_name = os.path.basename(apk_path)
+    final_name = actual_apk_name
+    print(f"Usando nombre versionado: {final_name}")
+    
     shutil.copy2(apk_path, final_name)
     
     with open(final_name, "rb") as f:

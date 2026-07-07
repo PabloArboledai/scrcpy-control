@@ -11,14 +11,14 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         versionCode 1
-        versionName "1.4.2"
+        versionName "1.4.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         archivesBaseName = "ControlDroid"
     }
 
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "ControlDroid.apk"
+            outputFileName = "ControlDroid_v${variant.versionName}.apk"
         }
     }
     signingConfigs {

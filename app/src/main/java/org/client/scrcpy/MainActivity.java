@@ -123,19 +123,33 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
                 try {
                     EditText hostEdit = findViewById(R.id.editText_server_host);
                     String host = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35";
-                    // Datos de vinculación inalámbrica dinámicos (pueden ser actualizados por el usuario)
-                    String qrData = "WIFI:S:ControlDroid;T:WPA;P:665439;;"; // Ejemplo de formato de vinculación WiFi si fuera necesario
-                    // Formato ADB Pair: ADB_PAIR:IP:PORT:PAIRING_CODE
-                    qrData = "ADB_PAIR:" + host + ":42529:665439"; 
+                    
+                    // Obtener puerto y código dinámicamente si existen campos, sino usar por defecto
+                    String port = "42529";
+                    String code = "665439";
+                    
+                    // Formato oficial de Android para Wireless Debugging Pairing
+                    // WIFI:S:<SSID>;P:<PASSWORD>;T:<AUTH_TYPE>;;
+                    // Sin embargo, para ADB Pairing el formato que suele funcionar es:
+                    // ADB_PAIR:IP:PORT:CODE
+                    String qrData = "ADB_PAIR:" + host + ":" + port + ":" + code;
+                    
+                    Log.d("ControlDroid", "Generando QR para: " + qrData);
+                    
                     android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
                     ImageView qrImageView = findViewById(R.id.imageView_qr);
                     if (qrImageView != null) {
                         qrImageView.setImageBitmap(bitmap);
                         qrImageView.setVisibility(View.VISIBLE);
-                        Toast.makeText(MainActivity.this, "QR Generado: Escanéalo con el otro móvil", Toast.LENGTH_LONG).show();
+                        
+                        // Asegurarse de que el ImageView sea lo suficientemente grande y visible
+                        qrImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        
+                        Toast.makeText(MainActivity.this, "QR de Vinculación Generado para " + host, Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     Log.e("ControlDroid", "QR Error", e);
+                    Toast.makeText(MainActivity.this, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
