@@ -174,7 +174,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    @Override
+    // onScrcpyExit is a legacy method — not in ServiceCallbacks interface
     public void onScrcpyExit() {
         connectExitExt();
     }
@@ -188,4 +188,20 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     private boolean onTouch(View v, MotionEvent event) {
         return false;
     }
+
+    @Override
+    public void errorDisconnect() {
+        // Handle disconnection error — show toast and return to connect screen
+        runOnUiThread(() -> {
+            android.widget.Toast.makeText(this, "Disconnected from device", android.widget.Toast.LENGTH_SHORT).show();
+            connectExitExt();
+        });
+    }
+
+    @Override
+    public void loadNewRotation() {
+        // Handle rotation change from service
+        runOnUiThread(this::set_display_nd_touch);
+    }
+
 }
