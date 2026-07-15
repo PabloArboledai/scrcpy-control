@@ -119,39 +119,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
 
         final Button qrButton = findViewById(R.id.button_qr_pair);
         if (qrButton != null) {
-            qrButton.setOnClickListener(v -> {
-                try {
-                    EditText hostEdit = findViewById(R.id.editText_server_host);
-                    String host = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35";
-                    
-                    // Obtener puerto y código dinámicamente si existen campos, sino usar por defecto
-                    String port = "42529";
-                    String code = "665439";
-                    
-                    // Formato oficial de Android para Wireless Debugging Pairing
-                    // WIFI:S:<SSID>;P:<PASSWORD>;T:<AUTH_TYPE>;;
-                    // Sin embargo, para ADB Pairing el formato que suele funcionar es:
-                    // ADB_PAIR:IP:PORT:CODE
-                    String qrData = "ADB_PAIR:" + host + ":" + port + ":" + code;
-                    
-                    Log.d("ControlDroid", "Generando QR para: " + qrData);
-                    
-                    android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 500, 500);
-                    ImageView qrImageView = findViewById(R.id.imageView_qr);
-                    if (qrImageView != null) {
-                        qrImageView.setImageBitmap(bitmap);
-                        qrImageView.setVisibility(View.VISIBLE);
-                        
-                        // Asegurarse de que el ImageView sea lo suficientemente grande y visible
-                        qrImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                        
-                        Toast.makeText(MainActivity.this, "QR de Vinculación Generado para " + host, Toast.LENGTH_LONG).show();
-                    }
-                } catch (Exception e) {
-                    Log.e("ControlDroid", "QR Error", e);
-                    Toast.makeText(MainActivity.this, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            qrButton.setOnClickListener(v -> showMultiNetworkQRDialog());
         }
     }
 
@@ -202,6 +170,157 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     public void loadNewRotation() {
         // Handle rotation change from service
         runOnUiThread(this::set_display_nd_touch);
+    }
+
+
+    /**
+     * Detects all available IPs (WiFi, Tailscale/VPN) and shows a dialog
+     * to generate QR for pairing via any network type.
+     */
+    private void showMultiNetworkQRDialog() {
+        java.util.List<String[]> networks = detectNetworkInterfaces();
+
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("Generar QR de Emparejamiento ADB");
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(40, 20, 40, 20);
+
+        android.widget.TextView ipLabel = new android.widget.TextView(this);
+        ipLabel.setText("Red / IP detectada:");
+        ipLabel.setTextSize(14);
+        layout.addView(ipLabel);
+
+        android.widget.Spinner ipSpinner = new android.widget.Spinner(this);
+        java.util.List<String> ipOptions = new java.util.ArrayList<>();
+        for (String[] net : networks) {
+            ipOptions.add(net[0] + " — " + net[1]);
+        }
+        ipOptions.add("IP manual (datos móviles / VPN pública)");
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ipOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ipSpinner.setAdapter(adapter);
+        layout.addView(ipSpinner);
+
+        android.widget.EditText manualIpEdit = new android.widget.EditText(this);
+        manualIpEdit.setHint("Ingresa IP (ej: 200.x.x.x o IP de VPN)");
+        manualIpEdit.setVisibility(android.view.View.GONE);
+        layout.addView(manualIpEdit);
+
+        ipSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(android.widget.AdapterView<?> p, android.view.View v2, int pos, long id) {
+                manualIpEdit.setVisibility(pos == ipOptions.size() - 1 ? android.view.View.VISIBLE : android.view.View.GONE);
+            }
+            public void onNothingSelected(android.widget.AdapterView<?> p) {}
+        });
+
+        android.widget.TextView portLabel = new android.widget.TextView(this);
+        portLabel.setText("Puerto ADB Pairing:");
+        portLabel.setTextSize(14);
+        portLabel.setPadding(0, 16, 0, 0);
+        layout.addView(portLabel);
+
+        android.widget.EditText portEdit = new android.widget.EditText(this);
+        portEdit.setHint("Ver: Ajustes → Desarrollador → Emparejamiento inalámbrico");
+        portEdit.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        layout.addView(portEdit);
+
+        android.widget.TextView codeLabel = new android.widget.TextView(this);
+        codeLabel.setText("Código de emparejamiento (6 dígitos):");
+        codeLabel.setTextSize(14);
+        codeLabel.setPadding(0, 16, 0, 0);
+        layout.addView(codeLabel);
+
+        android.widget.EditText codeEdit = new android.widget.EditText(this);
+        codeEdit.setHint("Código que aparece en el dispositivo destino");
+        codeEdit.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        layout.addView(codeEdit);
+
+        android.widget.TextView infoText = new android.widget.TextView(this);
+        infoText.setText("ℹ️ Ajustes > Opciones de desarrollador > Emparejamiento inalámbrico por código QR. Para Tailscale/VPN ambos deben estar en la misma red virtual.");
+        infoText.setTextSize(10);
+        infoText.setPadding(0, 16, 0, 0);
+        layout.addView(infoText);
+
+        builder.setView(layout);
+        builder.setPositiveButton("Generar QR", (dialog, which) -> {
+            String ip;
+            int sel = ipSpinner.getSelectedItemPosition();
+            if (sel == ipOptions.size() - 1) {
+                ip = manualIpEdit.getText().toString().trim();
+            } else {
+                ip = networks.get(sel)[1];
+            }
+            String port = portEdit.getText().toString().trim();
+            String code = codeEdit.getText().toString().trim();
+            if (ip.isEmpty() || port.isEmpty() || code.isEmpty()) {
+                Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            generateAndShowQR(ip, port, code);
+        });
+        builder.setNegativeButton("Cancelar", null);
+        builder.show();
+    }
+
+    /**
+     * Detects all IPv4 interfaces: WiFi (192.168/10/172.16), Tailscale (100.x), VPN, etc.
+     */
+    private java.util.List<String[]> detectNetworkInterfaces() {
+        java.util.List<String[]> results = new java.util.ArrayList<>();
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                java.net.NetworkInterface iface = interfaces.nextElement();
+                if (!iface.isUp() || iface.isLoopback()) continue;
+                java.util.Enumeration<java.net.InetAddress> addresses = iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    java.net.InetAddress addr = addresses.nextElement();
+                    if (addr instanceof java.net.Inet4Address) {
+                        String ip = addr.getHostAddress();
+                        String label;
+                        if (ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172.16.")) {
+                            label = "WiFi/LAN";
+                        } else if (ip.startsWith("100.")) {
+                            label = "Tailscale";
+                        } else {
+                            label = "VPN/Otro";
+                        }
+                        results.add(new String[]{label, ip});
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("ControlDroid", "Error detecting network interfaces", e);
+        }
+        // Always add Tailscale default if none detected
+        if (results.stream().noneMatch(r -> r[1].startsWith("100."))) {
+            results.add(new String[]{"Tailscale (predeterminado)", "100.91.47.35"});
+        }
+        return results;
+    }
+
+    /**
+     * Generates and shows QR for ADB Wireless pairing.
+     * Format: ADB_PAIR:IP:PORT:CODE
+     */
+    private void generateAndShowQR(String ip, String port, String code) {
+        try {
+            String qrData = "ADB_PAIR:" + ip + ":" + port + ":" + code;
+            Log.d("ControlDroid", "Generating QR: " + qrData);
+            android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 600, 600);
+            ImageView qrImageView = findViewById(R.id.imageView_qr);
+            if (qrImageView != null) {
+                qrImageView.setImageBitmap(bitmap);
+                qrImageView.setVisibility(android.view.View.VISIBLE);
+                qrImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                Toast.makeText(this, "✅ QR listo — Escanea desde el dispositivo a controlar (" + ip + ")", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            Log.e("ControlDroid", "QR Error", e);
+            Toast.makeText(this, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
 }
