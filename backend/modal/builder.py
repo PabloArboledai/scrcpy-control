@@ -22,7 +22,7 @@ image = (
     })
 )
 
-@app.function(image=image, timeout=1200, secrets=[modal.Secret.from_dict({"TELEGRAM_BOT_TOKEN": "8987478008:AAHd6jhsRyBVsbExWYecI6NgqavGiAp3Lew", "TELEGRAM_CHAT_ID": "8776480439"})])
+@app.function(image=image, timeout=1200, secrets=[modal.Secret.from_dict({"TELEGRAM_BOT_TOKEN": "8677334061:AAE9lpJqR2WUmetw_G7j5UFjhVcnARZPgjA", "TELEGRAM_CHAT_ID": "7295991966"})])
 def build_apk():
     import requests
     # Clonar el repo dentro de Modal
@@ -90,7 +90,8 @@ def build_apk():
         print("Generando enlace de descarga público...")
         with open(final_name, 'rb') as f:
             # Usamos file.io para un enlace temporal rápido y público
-            resp = requests.post('https://file.io', files={'file': f})
+            resp = requests.post('https://0x0.st', files={'file': (os.path.basename(final_name), f, 'application/vnd.android.package-archive')})
+            if resp.status_code == 200:\n                public_link = resp.text.strip()
             if resp.status_code == 200:
                 public_link = resp.json().get('link', 'Error en JSON')
                 print(f"✅ Enlace público: {public_link}")
