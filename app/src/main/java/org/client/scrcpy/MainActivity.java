@@ -167,12 +167,6 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         }
         
         setupMeshDiscovery();
-
-    }
-
-    @SuppressLint("SourceLockedOrientationActivity")
-    public void scrcpy_main() {
-        setContentView(R.layout.activity_main);
         sendCommands = new SendCommands();
         
         final Button startButton = findViewById(R.id.button_start);
@@ -435,6 +429,61 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         // For now we set it to start the connection flow.
     }
     
+    private void checkAndLaunchTailscale() {
+        String tailscalePackage = "com.tailscale.ipn";
+        boolean isInstalled = false;
+        try {
+            getPackageManager().getPackageInfo(tailscalePackage, 0);
+            isInstalled = true;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            isInstalled = false;
+        }
+
+        if (isInstalled) {
+            // Check if we already have a Tailscale IP (100.x.x.x)
+            java.util.List<String[]> networks = detectNetworkInterfaces();
+            boolean hasTailscaleIp = false;
+            for (String[] net : networks) {
+                if (net[1].startsWith("100.")) {
+                    hasTailscaleIp = true;
+                    break;
+                }
+            }
+
+            if (!hasTailscaleIp) {
+                // Not connected to Tailscale yet, prompt user to connect
+                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+                builder.setTitle("Conexión Remota (Tailscale)");
+                builder.setMessage("Parece que Tailscale está instalado pero no está conectado. Para poder usar ControlDroid de forma remota, necesitas iniciar Tailscale.");
+                builder.setPositiveButton("Abrir Tailscale", (dialog, which) -> {
+                    // Copiar Auth Key al portapapeles por si la necesitan
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("AuthKey", "tskey-auth-XYZ123-YOUR_KEY_HERE");
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(this, "Llave copiada al portapapeles (por si la necesitas)", Toast.LENGTH_LONG).show();
+                    
+                    Intent intent = getPackageManager().getLaunchIntentForPackage(tailscalePackage);
+                    if (intent != null) {
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton("Omitir (Uso Local)", null);
+                builder.show();
+            }
+        } else {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+            builder.setTitle("Tailscale No Instalado");
+            builder.setMessage("Para conectarte a otros dispositivos fuera de tu red WiFi, necesitas instalar Tailscale.");
+            builder.setPositiveButton("Descargar", (dialog, which) -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("market://details?id=" + tailscalePackage));
+                startActivity(intent);
+            });
+            builder.setNegativeButton("Omitir", null);
+            builder.show();
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
