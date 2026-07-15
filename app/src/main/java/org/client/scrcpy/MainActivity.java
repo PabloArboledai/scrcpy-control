@@ -77,29 +77,7 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     private ArrayAdapter<String> devicesAdapter;
     private List<GlobalRegistry.MeshDevice> discoveredDevices = new ArrayList<>();
     
-    private final androidx.activity.result.ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
-        if(result.getContents() == null) {
-            Toast.makeText(MainActivity.this, "Escaneo cancelado", Toast.LENGTH_LONG).show();
-        } else {
-            String qr = result.getContents();
-            // Soporte para WIFI:T:ADB;S:name;P:pass;; y ADB_PAIR:IP:PORT:CODE
-            try {
-                if (qr.startsWith("ADB_PAIR:")) {
-                    String[] parts = qr.split(":");
-                    String ip = parts[1];
-                    String port = parts[2];
-                    String code = parts[3];
-                    connectWithMesh(ip, port, code);
-                } else if (qr.startsWith("WIFI:T:ADB;")) {
-                    Toast.makeText(this, "Has escaneado un QR nativo de Android. El código es encriptado, intenta emparejar manualmente o usa el QR generado por esta app.", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(this, "QR no reconocido", Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                Toast.makeText(this, "Error leyendo QR", Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
+    // Removed ActivityResultLauncher, using IntentIntegrator
 
     
     private boolean headlessMode = false;
@@ -158,20 +136,14 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         Button scanBtn = findViewById(R.id.button_scan_qr);
         if (scanBtn != null) {
             scanBtn.setOnClickListener(v -> {
-                ScanOptions options = new ScanOptions();
-                options.setPrompt("Escanea el QR de ControlDroid");
-                options.setBeepEnabled(true);
-                options.setOrientationLocked(false);
-                barcodeLauncher.launch(options);
+                com.google.zxing.integration.android.IntentIntegrator integrator = new com.google.zxing.integration.android.IntentIntegrator(MainActivity.this);
+                integrator.setPrompt("Escanea el QR de ControlDroid");
+                integrator.setOrientationLocked(false);
+                integrator.initiateScan();
             });
         }
         
         setupMeshDiscovery();
-        sendCommands = new SendCommands();
-        
-        final Button startButton = findViewById(R.id.button_start);
-        if (startButton != null) {
-            startButton.setOnClickListener(v -> {
                 EditText hostEdit = findViewById(R.id.editText_server_host);
                 serverAdr = (hostEdit != null) ? hostEdit.getText().toString() : "100.91.47.35:42529";
                 connectScrcpyServer(serverAdr);
@@ -481,6 +453,34 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
             });
             builder.setNegativeButton("Omitir", null);
             builder.show();
+        }
+    }
+
+    @Override
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        com.google.zxing.integration.android.IntentResult result = com.google.zxing.integration.android.IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() == null) {
+                android.widget.Toast.makeText(this, "Escaneo cancelado", android.widget.Toast.LENGTH_LONG).show();
+            } else {
+                String qr = result.getContents();
+                try {
+                    if (qr.startsWith("ADB_PAIR:")) {
+                        String[] parts = qr.split(":");
+                        String ip = parts[1];
+                        String port = parts[2];
+                        String code_pairing = parts[3];
+                        connectWithMesh(ip, port, code_pairing);
+                    } else {
+                        android.widget.Toast.makeText(this, "QR no reconocido", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(this, "Error leyendo QR", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
