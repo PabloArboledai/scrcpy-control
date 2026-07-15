@@ -17,6 +17,16 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
+import android.widget.ListView;
+import android.widget.ArrayAdapter;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
+import org.client.scrcpy.network.DiscoveryService;
+import org.client.scrcpy.network.GlobalRegistry;
+import java.util.List;
+import java.util.ArrayList;
+
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -61,6 +71,36 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, SensorEventListener {
+
+    private DiscoveryService discoveryService;
+    private ListView listViewDevices;
+    private ArrayAdapter<String> devicesAdapter;
+    private List<GlobalRegistry.MeshDevice> discoveredDevices = new ArrayList<>();
+    
+    private final androidx.activity.result.ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
+        if(result.getContents() == null) {
+            Toast.makeText(MainActivity.this, "Escaneo cancelado", Toast.LENGTH_LONG).show();
+        } else {
+            String qr = result.getContents();
+            // Soporte para WIFI:T:ADB;S:name;P:pass;; y ADB_PAIR:IP:PORT:CODE
+            try {
+                if (qr.startsWith("ADB_PAIR:")) {
+                    String[] parts = qr.split(":");
+                    String ip = parts[1];
+                    String port = parts[2];
+                    String code = parts[3];
+                    connectWithMesh(ip, port, code);
+                } else if (qr.startsWith("WIFI:T:ADB;")) {
+                    Toast.makeText(this, "Has escaneado un QR nativo de Android. El código es encriptado, intenta emparejar manualmente o usa el QR generado por esta app.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "QR no reconocido", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error leyendo QR", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+
     
     private boolean headlessMode = false;
     private int screenWidth;
@@ -101,6 +141,33 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
         super.onCreate(savedInstanceState);
         context = this;
         scrcpy_main();
+
+        // Mesh Networking Init
+        listViewDevices = findViewById(R.id.listView_devices);
+        devicesAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
+        if (listViewDevices != null) {
+            listViewDevices.setAdapter(devicesAdapter);
+            listViewDevices.setOnItemClickListener((parent, view, position, id) -> {
+                if (position >= 0 && position < discoveredDevices.size()) {
+                    GlobalRegistry.MeshDevice d = discoveredDevices.get(position);
+                    connectWithMesh(d.ip, d.port, d.code);
+                }
+            });
+        }
+        
+        Button scanBtn = findViewById(R.id.button_scan_qr);
+        if (scanBtn != null) {
+            scanBtn.setOnClickListener(v -> {
+                ScanOptions options = new ScanOptions();
+                options.setPrompt("Escanea el QR de ControlDroid");
+                options.setBeepEnabled(true);
+                options.setOrientationLocked(false);
+                barcodeLauncher.launch(options);
+            });
+        }
+        
+        setupMeshDiscovery();
+
     }
 
     @SuppressLint("SourceLockedOrientationActivity")
@@ -308,6 +375,8 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
     private void generateAndShowQR(String ip, String port, String code) {
         try {
             String qrData = "ADB_PAIR:" + ip + ":" + port + ":" + code;
+            if(discoveryService != null) discoveryService.registerService(android.os.Build.MODEL, Integer.parseInt(port.isEmpty()?"0":port), code, ip);
+            GlobalRegistry.registerDevice(this, ip, port, code, ip.startsWith("100.") ? "Tailscale" : "WiFi");
             Log.d("ControlDroid", "Generating QR: " + qrData);
             android.graphics.Bitmap bitmap = QRCodeUtil.generateQRCode(qrData, 600, 600);
             ImageView qrImageView = findViewById(R.id.imageView_qr);
@@ -321,6 +390,55 @@ public class MainActivity extends Activity implements Scrcpy.ServiceCallbacks, S
             Log.e("ControlDroid", "QR Error", e);
             Toast.makeText(this, "Error al generar QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    private void setupMeshDiscovery() {
+        discoveryService = new DiscoveryService(this);
+        GlobalRegistry.MeshCallback callback = devices -> runOnUiThread(() -> {
+            discoveredDevices.clear();
+            discoveredDevices.addAll(devices);
+            List<String> names = new ArrayList<>();
+            for (GlobalRegistry.MeshDevice d : devices) {
+                names.add("📱 " + d.name + " (" + d.networkType + ") - " + d.ip);
+            }
+            if (names.isEmpty()) {
+                names.add("Buscando dispositivos cercanos...");
+            }
+            devicesAdapter.clear();
+            devicesAdapter.addAll(names);
+            devicesAdapter.notifyDataSetChanged();
+        });
+        
+        discoveryService.setCallback(callback);
+        discoveryService.discoverServices();
+        
+        // Empezar polling global
+        new Thread(() -> {
+            while (!isDestroyed()) {
+                GlobalRegistry.getAvailableDevices(callback);
+                try { Thread.sleep(10000); } catch (Exception e) {}
+            }
+        }).start();
+    }
+    
+    private void connectWithMesh(String ip, String port, String code) {
+        EditText hostEdit = findViewById(R.id.editText_server_host);
+        if (hostEdit != null) {
+            hostEdit.setText(ip + ":" + port);
+        }
+        // Save code globally if needed, then connect
+        Toast.makeText(this, "Conectando a " + ip + " usando código...", Toast.LENGTH_SHORT).show();
+        connectScrcpyServer(ip + ":" + port);
+        // Note: Real adb pairing requires running adb pair ip:port code under the hood.
+        // That logic must be triggered in connectScrcpyServer or before it.
+        // For now we set it to start the connection flow.
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (discoveryService != null) discoveryService.stopDiscovery();
     }
 
 }
