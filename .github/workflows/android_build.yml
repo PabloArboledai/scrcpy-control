@@ -45,14 +45,17 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Send APK to Telegram
-        if: ${{ secrets.TELEGRAM_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
+      - name: Send APK to Telegram when configured
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           APK_PATH: ${{ steps.apk.outputs.path }}
         run: |
           set -euo pipefail
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then
+            echo "Telegram secrets are not configured; APK remains available as an Actions artifact."
+            exit 0
+          fi
           curl --fail --silent --show-error \
             -F "document=@${APK_PATH}" \
             -F "caption=ControlDroid APK compilado correctamente." \
